@@ -151,7 +151,7 @@ export function SidebarActions({
                   const result = await shareChat(chat)
 
                   if (result && 'error' in result) {
-                    toast.error(result.error)
+                    toast.error(String(result.error))
                     return
                   }
 
