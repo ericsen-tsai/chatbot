@@ -1,41 +1,33 @@
 import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
-import { Configuration, OpenAIApi } from 'openai-edge'
+import OpenAI from 'openai'
+import { ChatCompletionMessageParam } from 'openai/resources'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 
-export const runtime = 'edge'
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!
 })
-
-const openai = new OpenAIApi(configuration)
 
 export async function POST(req: Request) {
   const json = await req.json()
-  const { messages, previewToken } = json
-  const userId = (await auth())?.user.id
+  const { messages } = json as { messages: ChatCompletionMessageParam[] }
+  const userId = String((await auth())?.user.id)
 
-  if (!userId) {
+  if (!userId || userId !== process.env.VALID_USER_ID) {
     return new Response('Unauthorized', {
       status: 401
     })
   }
 
-  if (previewToken) {
-    configuration.apiKey = previewToken
-  }
-
-  const res = await openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0.7,
-    stream: true
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4',
+    stream: true,
+    messages
   })
 
-  const stream = OpenAIStream(res, {
+  const stream = OpenAIStream(response, {
     async onCompletion(completion) {
       const title = json.messages[0].content.substring(0, 100)
       const id = json.id ?? nanoid()

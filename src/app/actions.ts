@@ -12,6 +12,10 @@ export async function getChats(userId?: string | null) {
     return []
   }
 
+  if (userId !== process.env.VALID_USER_ID) {
+    return []
+  }
+
   try {
     const pipeline = kv.pipeline()
     const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
