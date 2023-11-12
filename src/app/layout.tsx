@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png'
   },
-  metadataBase: new URL(process.env.VERCEL_URL || process.env.NEXTAUTH_URL!)
+  metadataBase: new URL(process.env.NEXTAUTH_URL!)
 }
 
 export const viewport: Viewport = {
