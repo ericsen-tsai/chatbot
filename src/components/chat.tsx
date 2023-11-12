@@ -5,10 +5,10 @@ import { useChat, type Message } from 'ai/react'
 import { cn } from '@/lib/utils'
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
-import { EmptyScreen } from '@/components/empty-screen'
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor'
 
 import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -16,6 +16,7 @@ export interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export function Chat({ id, initialMessages, className }: ChatProps) {
+  const router = useRouter()
   const { messages, append, reload, stop, isLoading, input, setInput } =
     useChat({
       initialMessages,
@@ -27,6 +28,12 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
         if (response.status === 401) {
           toast.error(response.statusText)
         }
+      },
+      onFinish() {
+        if (!initialMessages) {
+          router.push(`/chat/${id}`)
+          router.refresh()
+        }
       }
     })
   return (
@@ -37,9 +44,7 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
             <ChatList messages={messages} />
             <ChatScrollAnchor trackVisibility={isLoading} />
           </>
-        ) : (
-          <EmptyScreen />
-        )}
+        ) : null}
       </div>
       <ChatPanel
         id={id}
